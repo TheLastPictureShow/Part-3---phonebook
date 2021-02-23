@@ -1,88 +1,93 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const morgan = require("morgan");
 const cors = require("cors");
+const Entry = require("./models/entry");
+const colors = require("colors");
 
 app.use(express.static("build"));
 app.use(express.json());
 app.use(morgan("tiny"));
 app.use(cors());
 
-let persons = [
-  {
-    name: "Alex Verona",
-    number: "1234",
-    id: 1,
-  },
-  {
-    name: "Brian De Palma",
-    number: "2345",
-    id: 2,
-  },
-];
-
-app.get("/", (request, response) => {
-  response.send("<h1>Hello World!</h1>");
-});
-
+// This is how we fetch all entries from the database (MongoDB):
 app.get("/api/persons", (request, response) => {
-  response.json(persons);
+  Entry.find({}).then((entries) => {
+    response.json(entries);
+  });
 });
 
+// This is how we get some info about the app:
 app.get("/info", (request, response) => {
-  const dateIs = new Date().toString();
-  response.send(
-    `<h3>Phonebook has info for ${persons.length} people.</h3>
-     <p>The time and date is: ${dateIs}</p>`
-  );
+  Entry.find({}).then((entries) => {
+    response.send(
+      `<h3>The phonebook has info for ${entries.length} people</h3>
+      <p>The time and date is: ${new Date().toString()}</p>`
+    );
+  });
 });
 
-// This is how we fetch a single entry:
+// This is how we fetch a single entry from the database:
 app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const entry = persons.find((el) => el.id === id);
-  if (entry) {
+  Entry.findById(request.params.id).then((entry) => {
+    console.log("entry is", entry);
     response.json(entry);
-  } else {
-    response.status(404).end();
-  }
+  });
 });
 
 // This is how we delete a single entry:
 app.delete("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  persons = persons.filter((el) => el.id !== id);
-  response.status(204).end();
+  Entry.findByIdAndRemove(request.params.id).then((entry) => {
+    console.log("deleted entry is", entry.name);
+    response.status(204).end();
+  });
 });
 
 // This is how we add a new entry:
-app.post("/api/persons", (request, response) => {
-  const entry = request.body;
-  entry.id = Number((Math.random() * 1000).toFixed(2));
+app.post("/api/persons", (request, response, next) => {
+  const body = request.body;
 
-  if (!entry.name) {
-    return response.status(400).json({
-      error: "Name missing",
-    });
+  if (!body.name) {
+    return response.status(404).json({ error: "name missing" });
   }
 
-  if (!entry.number) {
-    return response.status(400).json({
-      error: "Number missing",
-    });
+  if (!body.number) {
+    return response.status(404).json({ error: "number missing" });
   }
 
-  let exists = persons.map((el) => el.name);
-  if (exists.includes(entry.name)) {
-    return response.status(400).json({
-      error: "Name must be unique",
-    });
-  }
-  persons = persons.concat(entry);
-  response.json(persons);
+  const entry = new Entry({
+    name: body.name,
+    number: body.number,
+  });
+
+  entry
+    .save()
+    .then((savedEntry) => {
+      response.json(savedEntry);
+      console.log("savedEntry is:", savedEntry);
+      console.log("Entry creation successful");
+    })
+    .catch((error) => next(error));
 });
 
-const PORT = process.env.PORT || 3001;
+const errorHandler = (error, request, response, next) => {
+  console.error(
+    "Error! Error Name:",
+    error.name,
+    "Error Message:",
+    error.message
+  );
+
+  if (error) {
+    return response.status(400).send(error.message);
+  }
+  next(error);
+};
+
+app.use(errorHandler);
+
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`.brightYellow);
 });
