@@ -4,6 +4,7 @@ const uniqueValidator = require("mongoose-unique-validator");
 
 const url = process.env.MONGODB_URI;
 console.log("url is type of", typeof url);
+console.log("url is:", url);
 
 console.log(("connecting to", url));
 
