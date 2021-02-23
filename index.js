@@ -12,9 +12,11 @@ app.use(cors());
 
 // This is how we fetch all entries from the database (MongoDB):
 app.get("/api/persons", (request, response) => {
-  Entry.find({}).then((entries) => {
-    response.json(entries);
-  });
+  Entry.find({})
+    .then((entries) => {
+      response.json(entries);
+    })
+    .catch((error) => next(error));
 });
 
 // This is how we get some info about the app:
