@@ -11,7 +11,7 @@ app.use(morgan("tiny"));
 app.use(cors());
 
 // This is how we fetch all entries from the database (MongoDB):
-app.get("/api/persons", (request, response) => {
+app.get("/api/persons", (request, response, next) => {
   Entry.find({})
     .then((entries) => {
       response.json(entries);
@@ -20,7 +20,7 @@ app.get("/api/persons", (request, response) => {
 });
 
 // This is how we get some info about the app:
-app.get("/info", (request, response) => {
+app.get("/info", (request, response, next) => {
   Entry.find({})
     .then((entries) => {
       response.send(
@@ -32,7 +32,7 @@ app.get("/info", (request, response) => {
 });
 
 // This is how we fetch a single entry from the database:
-app.get("/api/persons/:id", (request, response) => {
+app.get("/api/persons/:id", (request, response, next) => {
   Entry.findById(request.params.id)
     .then((entry) => {
       console.log("entry is", entry);
@@ -42,7 +42,7 @@ app.get("/api/persons/:id", (request, response) => {
 });
 
 // This is how we delete a single entry:
-app.delete("/api/persons/:id", (request, response) => {
+app.delete("/api/persons/:id", (request, response, next) => {
   Entry.findByIdAndRemove(request.params.id)
     .then((entry) => {
       console.log("deleted entry is", entry.name);
