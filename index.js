@@ -4,7 +4,6 @@ const app = express();
 const morgan = require("morgan");
 const cors = require("cors");
 const Entry = require("./models/entry");
-const colors = require("colors");
 
 app.use(express.static("build"));
 app.use(express.json());
@@ -89,5 +88,5 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`.brightYellow);
+  console.log(`Server running on port ${PORT}`);
 });
