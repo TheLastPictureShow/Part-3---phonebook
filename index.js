@@ -21,28 +21,34 @@ app.get("/api/persons", (request, response) => {
 
 // This is how we get some info about the app:
 app.get("/info", (request, response) => {
-  Entry.find({}).then((entries) => {
-    response.send(
-      `<h3>The phonebook has info for ${entries.length} people</h3>
+  Entry.find({})
+    .then((entries) => {
+      response.send(
+        `<h3>The phonebook has info for ${entries.length} people</h3>
       <p>The time and date is: ${new Date().toString()}</p>`
-    );
-  });
+      );
+    })
+    .catch((error) => next(error));
 });
 
 // This is how we fetch a single entry from the database:
 app.get("/api/persons/:id", (request, response) => {
-  Entry.findById(request.params.id).then((entry) => {
-    console.log("entry is", entry);
-    response.json(entry);
-  });
+  Entry.findById(request.params.id)
+    .then((entry) => {
+      console.log("entry is", entry);
+      response.json(entry);
+    })
+    .catch((error) => next(error));
 });
 
 // This is how we delete a single entry:
 app.delete("/api/persons/:id", (request, response) => {
-  Entry.findByIdAndRemove(request.params.id).then((entry) => {
-    console.log("deleted entry is", entry.name);
-    response.status(204).end();
-  });
+  Entry.findByIdAndRemove(request.params.id)
+    .then((entry) => {
+      console.log("deleted entry is", entry.name);
+      response.status(204).end();
+    })
+    .catch((error) => next(error));
 });
 
 // This is how we add a new entry:
